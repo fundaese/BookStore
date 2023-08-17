@@ -23,11 +23,21 @@ class BooksFragment : Fragment(R.layout.fragment_books), BooksAdapter.BookListen
 
     private val booksAdapter by lazy { BooksAdapter(this) }
 
+    var bestSellerBook : Book? = null
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         with(binding) {
             rvBooks.adapter = booksAdapter
+            ivBestSellerBook.setOnClickListener {
+                val action = bestSellerBook?.id?.let { it ->
+                    BooksFragmentDirections.actionBooksFragmentToDetailFragment(it)
+                }
+                if (action != null) {
+                    findNavController().navigate(action)
+                }
+            }
             getBooks()
         }
     }
@@ -38,8 +48,9 @@ class BooksFragment : Fragment(R.layout.fragment_books), BooksAdapter.BookListen
             override fun onResponse(call: Call<GetBooksResponse>, response: Response<GetBooksResponse>) {
                 val result = response.body()?.books
 
-                val bestSellerBook = result?.firstOrNull { it.bestSeller }
+                bestSellerBook = result?.firstOrNull { it.bestSeller }
 
+                bestSellerBook?.id
                 bestSellerBook?.let {
                     Glide.with(requireContext())
                         .load(it.imageUrl)
